@@ -251,13 +251,18 @@ if (process.env.DISCORD_BOT_TOKEN) {
     };
 }
 
-// Slack configuration
+// Slack configuration (merge, don't overwrite, to preserve groupPolicy/channels)
 if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN) {
-    config.channels.slack = {
+    config.channels.slack = Object.assign({}, config.channels.slack || {}, {
         botToken: process.env.SLACK_BOT_TOKEN,
         appToken: process.env.SLACK_APP_TOKEN,
         enabled: true,
-    };
+        mode: 'socket',
+    });
+    if (!config.channels.slack.groupPolicy) {
+        config.channels.slack.groupPolicy = 'open';
+        config.channels.slack.requireMention = true;
+    }
 }
 
 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
